@@ -10,6 +10,7 @@ import (
 	"github.com/Victormrf/payment-gateway/go-gateway-api/internal/service"
 	"github.com/Victormrf/payment-gateway/go-gateway-api/internal/web/server"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq" // PostgreSQL driver
 )
 
 func getEnv(key, fallback string) string {
