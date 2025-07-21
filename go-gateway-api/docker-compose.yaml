@@ -16,5 +16,27 @@ services:
       retries: 5
     restart: unless-stopped
 
+  app: # Novo serviço para sua aplicação Go
+    build:
+      context: . # Assumindo que seu Dockerfile e o código Go estão na raiz do projeto
+    ports:
+      - "8080:8080" # Mapeie a porta da sua aplicação
+    environment:
+      # Passe as variáveis de ambiente que sua aplicação usa
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: gateway
+      DB_SSL_MODE: disable
+      HTTP_PORT: 8080
+    depends_on:
+      db:
+        condition: service_healthy # Garante que 'app' só inicia depois que 'db' estiver saudável
+    volumes:
+      # Mapeie o diretório de migrações para dentro do container
+      - ./migrations:/app/migrations
+    restart: unless-stopped
+
 volumes:
   postgres_data:
