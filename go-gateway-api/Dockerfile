@@ -1,5 +1,5 @@
 # --- Etapa de Build ---
-FROM golang:1.22-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
@@ -16,14 +16,13 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app/main cmd/app/main.go
 
 # --- Etapa Final (Runtime) ---
-FROM scratch
+FROM alpine:latest
 
 WORKDIR /app
 
-# Copia o binário compilado da etapa de build
 COPY --from=builder /app/main .
+COPY --from=builder /app/migrations /app/migrations
 
-# Expõe a porta que sua aplicação usa
 EXPOSE 8080
 
 # Comando para rodar a aplicação

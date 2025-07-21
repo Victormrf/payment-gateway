@@ -10,7 +10,7 @@ Content-Type: application/json
 
 {
   "name": "John Doe",
-  "email": "john@doe.com"
+  "email": "john5@doe.com"
 }
 
 ###
@@ -37,6 +37,10 @@ X-API-Key: {{apiKey}}
 ### Obter uma fatura específica
 @invoiceId = {{createInvoice.response.body.id}}
 GET {{baseUrl}}/invoice/{{invoiceId}}
+X-API-Key: {{apiKey}}
+
+### Listar faturas de uma conta
+GET {{baseUrl}}/invoice
 X-API-Key: {{apiKey}}
 
 ### Tentar criar fatura com valor alto (> 10000)

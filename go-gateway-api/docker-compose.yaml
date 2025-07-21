@@ -23,6 +23,7 @@ services:
       - "8080:8080" # Mapeie a porta da sua aplicação
     environment:
       # Passe as variáveis de ambiente que sua aplicação usa
+      APP_ENV: production
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: postgres

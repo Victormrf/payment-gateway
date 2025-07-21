@@ -56,7 +56,7 @@ func (r *InvoiceRepository) FindByAccountID(accountID string) ([]*domain.Invoice
 	rows, err := r.db.Query(`
 		SELECT id, account_id, amount, status, description, payment_type, card_last_digits, created_at, updated_at 
 		FROM invoices 
-		WHERE accountID = $1
+		WHERE account_id = $1
 	`, accountID)
 	if err != nil {
 		return nil, err

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"time"
+	"strings"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres" // Driver de migração para PostgreSQL
@@ -25,14 +26,17 @@ func getEnv(key, fallback string) string {
 	return fallback
 }
 
-
-// Onde vou juntar Web e Application
+// Onde vou juntar web e application
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+	if getEnv("APP_ENV", "development") == "development" {
+		if err := godotenv.Load(); err != nil {
+			log.Fatal("Error loading .env file for development: ", err)
+		}
+		log.Println("Loaded .env file for development environment.")
+	} else {
+		log.Println("Running in production environment, using system environment variables.")
 	}
 
-	// string de conexão com o banco de dados
 	connStr := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		getEnv("DB_HOST", "db"),
@@ -43,7 +47,6 @@ func main() {
 		getEnv("DB_SSL_MODE", "disable"),
 	)
 
-	// URL de conexão para a ferramenta de migração
 	migrateURL := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		getEnv("DB_USER", "postgres"),
@@ -58,7 +61,7 @@ func main() {
 	for i := 0; i < maxRetries; i++ {
 		log.Printf("Tentando aplicar migrações... Tentativa %d/%d", i+1, maxRetries)
 		m, err := migrate.New(
-			"file://migrations", // Certifique-se de que este é o caminho correto para seus arquivos de migração
+			"file://migrations",
 			migrateURL,
 		)
 		if err != nil {
@@ -68,8 +71,7 @@ func main() {
 		}
 
 		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-			// Se o erro for de conexão, tentamos novamente
-			if err.Error() == "dial tcp: lookup db: no such host" || err.Error() == "pq: SSL is not enabled on the server" { // Exemplo de erros de conexão
+			if isNetworkError(err) {
 				log.Printf("Erro de conexão com o banco de dados durante a migração: %v. Retentando em 5 segundos...", err)
 				time.Sleep(5 * time.Second)
 				continue
@@ -80,16 +82,20 @@ func main() {
 		} else {
 			log.Println("Migrações aplicadas com sucesso!")
 		}
-		break // Saia do loop se as migrações foram bem-sucedidas ou não houveram mudanças
+		break 
 	}
 
-
-	// Cofiguração de conexão com banco de dados
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal("Error connecting to the database: ", err)
 	}
 	defer db.Close()
+
+	if err = db.Ping(); err != nil {
+		log.Fatalf("Error pinging database after migrations: %v", err)
+	}
+	log.Println("Conexão com o banco de dados estabelecida com sucesso.")
+
 
 	accountRepository := repository.NewAccountRepository(db)
 	accountService := service.NewAccountService(accountRepository)
@@ -104,4 +110,12 @@ func main() {
 	if err := srv.Start(); err != nil {
 		log.Fatal("Error starting server: ", err)
 	}
+}
+
+// isNetworkError tenta identificar erros de rede comuns
+func isNetworkError(err error) bool {
+	errMsg := err.Error()
+	return strings.Contains(errMsg, "no such host") || // Docker pode não resolver 'db' imediatamente
+		strings.Contains(errMsg, "connection refused") || // DB não está pronto ou inacessível
+		strings.Contains(errMsg, "timeout") // Timeout de conexão
 }
