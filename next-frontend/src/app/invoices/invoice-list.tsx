@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input"
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+// import { Input } from "@/components/ui/input";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
 import { PlusIcon, Eye, Download } from "lucide-react";
 import Link from "next/link";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -9,14 +15,14 @@ import { cookies } from "next/headers";
 export async function getInvoices() {
   const cookiesStore = await cookies();
   const apiKey = cookiesStore.get("apiKey")?.value;
-  const response = await fetch("http://app:8080/invoice", {
+  const response = await fetch("http://localhost:8080/invoice", {
     headers: {
       "X-API-KEY": apiKey as string,
     },
-    cache: 'force-cache',
+    cache: "force-cache",
     next: {
-      tags: [`accounts/${apiKey}/invoices`]
-    }
+      tags: [`accounts/${apiKey}/invoices`],
+    },
   });
   return response.json();
 }
@@ -62,7 +68,9 @@ export async function InvoiceList() {
         </div>
 
         <div>
-          <label className="text-sm text-gray-400 mb-1 block">Data Inicial</label>
+          <label className="text-sm text-gray-400 mb-1 block">
+            Data Inicial
+          </label>
           <Input
             type="text"
             placeholder="dd/mm/aaaa"
@@ -121,42 +129,52 @@ export async function InvoiceList() {
             </tr>
           </thead>
           <tbody>
-            {invoices.map((invoice) => (
-              <tr key={invoice.id} className="border-b border-gray-800">
-                <td className="py-4 px-4 text-white">{invoice.id}</td>
-                <td className="py-4 px-4 text-white">
-                  {new Date(invoice.created_at).toLocaleDateString()}
-                </td>
-                <td className="py-4 px-4 text-white">{invoice.description}</td>
-                <td className="py-4 px-4 text-white">
-                  R$ {invoice.amount.toFixed(2).replace(".", ",")}
-                </td>
-                <td className="py-4 px-4">
-                  <StatusBadge status={invoice.status} />
-                </td>
-                <td className="py-4 px-4">
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 hover:bg-gray-700"
-                      asChild
-                    >
-                      <Link href={`/invoices/${invoice.id}`}>
-                        <Eye className="h-4 w-4 text-gray-400" />
-                      </Link>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 hover:bg-gray-700"
-                    >
-                      <Download className="h-4 w-4 text-gray-400" />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {invoices.map(
+              (invoice: {
+                id: string;
+                created_at: Date;
+                description: string;
+                amount: number;
+                status: "approved" | "pending" | "rejected";
+              }) => (
+                <tr key={invoice.id} className="border-b border-gray-800">
+                  <td className="py-4 px-4 text-white">{invoice?.id}</td>
+                  <td className="py-4 px-4 text-white">
+                    {new Date(invoice.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="py-4 px-4 text-white">
+                    {invoice.description}
+                  </td>
+                  <td className="py-4 px-4 text-white">
+                    R$ {invoice.amount.toFixed(2).replace(".", ",")}
+                  </td>
+                  <td className="py-4 px-4">
+                    <StatusBadge status={invoice.status} />
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-gray-700"
+                        asChild
+                      >
+                        <Link href={`/invoices/${invoice.id}`}>
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 hover:bg-gray-700"
+                      >
+                        <Download className="h-4 w-4 text-gray-400" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              )
+            )}
           </tbody>
         </table>
       </div>

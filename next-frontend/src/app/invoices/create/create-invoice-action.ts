@@ -11,14 +11,14 @@ export async function createInvoiceAction(formData: FormData) {
   const amount = formData.get("amount")?.toString().replace(",", ".");
   const description = formData.get("description");
   const cardNumber = formData.get("cardNumber");
-  const [expiryMonth, expiryYear] = formData
-    .get("expiryDate")!
+  const [expirationMonth, expirationYear] = formData
+    .get("expirationDate")!
     .toString()
     .split("/");
   const cvv = formData.get("cvv");
-  const cardholderName = formData.get("cardholderName");
+  const cardHolderName = formData.get("cardHolderName");
 
-  const response = await fetch("http://app:8080/invoice", {
+  const response = await fetch("http://localhost:8080/invoice", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -28,10 +28,10 @@ export async function createInvoiceAction(formData: FormData) {
       amount: parseFloat(amount as string),
       description,
       card_number: cardNumber,
-      expiry_month: parseInt(expiryMonth as string),
-      expiry_year: parseInt(expiryYear as string),
+      expiration_month: parseInt(expirationMonth as string),
+      expiration_year: parseInt(expirationYear as string),
       cvv,
-      cardholder_name: cardholderName,
+      cardolder_name: cardHolderName,
       payment_type: "credit_card",
     }),
   });
@@ -44,7 +44,7 @@ export async function createInvoiceAction(formData: FormData) {
   const data = await response.json();
 
   revalidateTag(`accounts/${apiKey}/invoices`);
-  revalidateTag(`accounts/${apiKey}/invoices/${data.id}`)
+  revalidateTag(`accounts/${apiKey}/invoices/${data.id}`);
 
   redirect("/invoices");
 }

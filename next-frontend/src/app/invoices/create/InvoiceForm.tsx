@@ -68,12 +68,12 @@ export function InvoiceForm() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="expiryDate" className="text-gray-300 block">
+                <label htmlFor="expirationDate" className="text-gray-300 block">
                   Data de Expiração
                 </label>
                 <Input
-                  id="expiryDate"
-                  name="expiryDate"
+                  id="expirationDate"
+                  name="expirationDate"
                   placeholder="MM/AA"
                   defaultValue={"12/25"}
                   className="bg-[#2a3749] border-gray-700 text-white placeholder-gray-400"
@@ -88,19 +88,19 @@ export function InvoiceForm() {
                   id="cvv"
                   name="cvv"
                   placeholder="123"
-                    defaultValue={"123"}
+                  defaultValue={"123"}
                   className="bg-[#2a3749] border-gray-700 text-white placeholder-gray-400"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="cardholderName" className="text-gray-300 block">
+              <label htmlFor="cardHolderName" className="text-gray-300 block">
                 Nome no Cartão
               </label>
               <Input
-                id="cardholderName"
-                name="cardholderName"
+                id="cardHolderName"
+                name="cardHolderName"
                 placeholder="Como aparece no cartão"
                 defaultValue={"Nome Sobrenome"}
                 className="bg-[#2a3749] border-gray-700 text-white placeholder-gray-400"
