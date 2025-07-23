@@ -16,14 +16,12 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app/main cmd/app/main.go
 
 # --- Etapa Final (Runtime) ---
-FROM alpine:latest
+FROM scratch
 
 WORKDIR /app
 
 COPY --from=builder /app/main .
-COPY --from=builder /app/migrations /app/migrations
 
 EXPOSE 8080
 
-# Comando para rodar a aplicação
 CMD ["/app/main"]
