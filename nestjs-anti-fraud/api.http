@@ -1,0 +1,7 @@
+GET http://localhost:3001/invoices
+
+###
+GET http://localhost:3001/invoices?with_fraud=true&account_id=1
+
+###
+GET http://localhost:3001/invoices/1
