@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
 	"os"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres" // Driver de migração para PostgreSQL
@@ -96,12 +97,35 @@ func main() {
 	}
 	log.Println("Conexão com o banco de dados estabelecida com sucesso.")
 
+	// Configura e inicializa o Kafka
+	baseKafkaConfig := service.NewKafkaConfig()
 
+	// Configura e inicializa o produtor Kafka
+	producerTopic := getEnv("KAFKA_PRODUCER_TOPIC", "pending_transactions")
+	producerConfig := baseKafkaConfig.WithTopic(producerTopic)
+	kafkaProducer := service.NewKafkaProducer(producerConfig)
+	defer kafkaProducer.Close()
+
+	// Inicializa camadas da aplicação (repository -> service -> server)
 	accountRepository := repository.NewAccountRepository(db)
 	accountService := service.NewAccountService(accountRepository)
 
 	invoiceRepository := repository.NewInvoiceRepository(db)
-	invoiceService := service.NewInvoiceService(invoiceRepository, *accountService)
+	invoiceService := service.NewInvoiceService(invoiceRepository, *accountService, kafkaProducer)
+
+	// Configura e inicializa o consumidor Kafka
+	consumerTopic := getEnv("KAFKA_CONSUMER_TOPIC", "transaction_results")
+	consumerConfig := baseKafkaConfig.WithTopic(consumerTopic)
+	groupID := getEnv("KAFKA_CONSUMER_GROUP_ID", "gateway-group")
+	kafkaConsumer := service.NewKafkaConsumer(consumerConfig, groupID, invoiceService)
+	defer kafkaConsumer.Close()
+
+	// Inicia o consumidor Kafka em uma goroutine
+	go func() {
+		if err := kafkaConsumer.Consume(context.Background()); err != nil {
+			log.Printf("Error consuming kafka messages: %v", err)
+		}
+	}()
 
 	port := getEnv("HTTP_PORT", "8080")
 	srv := server.NewServer(accountService, invoiceService, port)
