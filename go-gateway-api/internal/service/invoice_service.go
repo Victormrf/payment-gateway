@@ -86,3 +86,32 @@ func (s *InvoiceService) ListByAccountAPIKey(apiKey string) ([]*dto.InvoiceOutpu
 
 	return s.ListByAccount(accountOutput.ID)
 }
+
+// ProcessTransactionResult processa o resultado de uma transação após análise de fraude
+func (s *InvoiceService) ProcessTransactionResult(invoiceID string, status domain.Status) error {
+	invoice, err := s.invoiceRepository.FindByID(invoiceID)
+	if err != nil {
+		return err
+	}
+
+	if err := invoice.UpdateStatus(status); err != nil {
+		return err
+	}
+
+	if err := s.invoiceRepository.UpdateStatus(invoice); err != nil {
+		return err
+	}
+
+	if status == domain.StatusApproved {
+		account, err := s.accountService.FindByID(invoice.AccountID)
+		if err != nil {
+			return err
+		}
+
+		if _, err := s.accountService.UpdateBalance(account.APIKey, invoice.Amount); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
