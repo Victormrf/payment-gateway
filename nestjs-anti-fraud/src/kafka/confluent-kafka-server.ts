@@ -29,6 +29,7 @@ import {
 import { ConfluentKafkaContext } from './confluent-kafka-context';
 import { isNil } from '@nestjs/common/utils/shared.utils';
 import { isObservable, lastValueFrom, Observable, ReplaySubject } from 'rxjs';
+import { EventEmitter } from 'events';
 
 type MakePropRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 type MakePropOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
@@ -61,6 +62,8 @@ export class ConfluentKafkaServer
   protected parser: KafkaParser;
   protected clientId: string;
   protected groupId: string;
+
+  private eventEmitter = new EventEmitter();
 
   constructor(protected readonly options: KafkaServerOptions) {
     super();
@@ -260,7 +263,6 @@ export class ConfluentKafkaServer
     if (!outgoingResponse.isDisposed) {
       return;
     }
-    //@ts-expect-error - headers exists
     outgoingMessage.headers[KafkaHeaders.NEST_IS_DISPOSED] = Buffer.alloc(1);
   }
 
@@ -268,7 +270,6 @@ export class ConfluentKafkaServer
     correlationId: string,
     outgoingMessage: Message,
   ) {
-    //@ts-expect-error - headers exists
     outgoingMessage.headers[KafkaHeaders.CORRELATION_ID] =
       Buffer.from(correlationId);
   }
@@ -294,7 +295,6 @@ export class ConfluentKafkaServer
       typeof outgoingResponse.err === 'object'
         ? JSON.stringify(outgoingResponse.err)
         : String(outgoingResponse.err);
-    //@ts-expect-error - headers exists
     outgoingMessage.headers[KafkaHeaders.NEST_ERR] =
       Buffer.from(stringifiedError);
   }
@@ -327,6 +327,10 @@ export class ConfluentKafkaServer
     });
   }
 
+  addRpcTarget() {
+    // No-op for compatibility with NestJS microservices
+  }
+
   /**
    * This method is triggered on application shutdown.
    */
@@ -352,8 +356,9 @@ export class ConfluentKafkaServer
     this.deserializer = deserializer || new KafkaRequestDeserializer();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   on(event: any, callback: any): any {
-    throw new Error('Not implemented');
+    return this.eventEmitter.on(event, callback);
   }
   /**
    * Returns an instance of the underlying server/broker instance,

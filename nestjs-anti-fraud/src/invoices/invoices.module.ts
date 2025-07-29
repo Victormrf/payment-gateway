@@ -6,6 +6,7 @@ import { UnusualAmountSpecification } from './fraud/specifications/unusual-amoun
 import { FraudAggregateSpecification } from './fraud/specifications/fraud-aggregate.specification';
 import { InvoicesService } from './invoices.service';
 import { InvoicesController } from './invoices.controller';
+import { InvoicesConsumer } from './invoice.consumer';
 
 @Module({
   providers: [
@@ -35,6 +36,6 @@ import { InvoicesController } from './invoices.controller';
     },
     InvoicesService,
   ],
-  controllers: [InvoicesController],
+  controllers: [InvoicesController, InvoicesConsumer],
 })
 export class InvoicesModule {}
