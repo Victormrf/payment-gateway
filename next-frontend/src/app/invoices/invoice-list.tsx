@@ -15,7 +15,7 @@ import { cookies } from "next/headers";
 export async function getInvoices() {
   const cookiesStore = await cookies();
   const apiKey = cookiesStore.get("apiKey")?.value;
-  const response = await fetch("http://localhost:8080/invoice", {
+  const response = await fetch("http://app:8080/invoice", {
     headers: {
       "X-API-KEY": apiKey as string,
     },

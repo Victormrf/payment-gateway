@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Download } from "lucide-react";
 import Link from "next/link";
 import { cookies } from "next/headers";
@@ -9,7 +9,7 @@ import { StatusBadge } from "../../../components/StatusBadge";
 export async function getInvoice(id: string) {
   const cookiesStore = await cookies();
   const apiKey = cookiesStore.get("apiKey")?.value;
-  const response = await fetch(`http://localhost:8080/invoice/${id}`, {
+  const response = await fetch(`http://app:8080/invoice/${id}`, {
     headers: {
       "X-API-KEY": apiKey as string,
     },

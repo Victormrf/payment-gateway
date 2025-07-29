@@ -1,4 +1,3 @@
-
 import { InfoIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
 import { Button } from "../../components/ui/button";
@@ -9,8 +8,8 @@ import { redirect } from "next/navigation";
 export async function loginAction(formData: FormData) {
   "use server";
   const apiKey = formData.get("apiKey");
-console.log(apiKey);
-  const response = await fetch("http://localhost:8080/accounts", {
+  console.log(apiKey);
+  const response = await fetch("http://app:8080/accounts", {
     headers: {
       "X-API-KEY": apiKey as string,
     },
@@ -28,7 +27,6 @@ console.log(apiKey);
 }
 
 export function AuthForm() {
-  
   return (
     <form className="space-y-4" action={loginAction}>
       <div className="space-y-2">
